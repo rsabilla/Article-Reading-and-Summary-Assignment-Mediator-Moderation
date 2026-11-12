@@ -1,0 +1,152 @@
+---
+title: "Moderators vs. Mediators: My Notes on Baron & Kenny (1986)"
+subtitle: "Article summary for future reference"
+author: "Ron Sabilla"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    theme: cosmo
+    embed-resources: true
+    code-fold: true
+---
+
+## Article Info
+
+**Citation:** Baron, Reuben M., and David A. Kenny (1986), "The Moderator–Mediator Variable Distinction in Social Psychological Research: Conceptual, Strategic, and Statistical Considerations," *Journal of Personality and Social Psychology*, 51 (6), 1173–82. <https://doi.org/10.1037/0022-3514.51.6.1173>
+
+**Quick take:** This is *the* paper everyone cites when they talk about mediation and moderation. Baron and Kenny noticed researchers were using "moderator" and "mediator" like they meant the same thing, so they broke down how the two are different at three levels: conceptual (what they are), strategic (when you'd use each), and statistical (how you actually test them).
+
+If I had to sum it up in one line:
+
+> A **moderator** tells you *when* or *for whom* an effect happens. A **mediator** tells you *how* or *why* it happens.
+
+## The Big Distinction
+
+| | **Moderator** | **Mediator** |
+|---|---|---|
+| Question it answers | *When* / *for whom* does X affect Y? | *How* / *why* does X affect Y? |
+| What it does | Changes the **strength or direction** of the X → Y relationship | **Carries** the effect from X to Y (X → M → Y) |
+| Where it sits | Outside the causal chain, at the same level as X | Inside the causal chain, between X and Y |
+| Typical variables | Stable traits, groups, situations (gender, age, segment) | Internal processes (attitudes, beliefs, motivation) |
+| Role in the model | Always a predictor (exogenous) | Both an effect (of X) and a cause (of Y) |
+| How it shows up statistically | **Interaction term** (X × Z) | **Indirect effect** (path a × path b) |
+| When researchers usually look for it | When the X → Y relationship is weak or inconsistent | When there's already a solid X → Y relationship to explain |
+
+## Moderators
+
+### What a moderator is
+
+A moderator is a variable (categorical like gender, or continuous like income) that changes how X relates to Y. The relationship might get stronger, weaker, or even flip direction depending on the moderator's level.
+
+```{mermaid}
+flowchart LR
+  X[Predictor X] --> Y[Outcome Y]
+  Z[Moderator Z] -.changes the strength of.-> E(( ))
+  X --- E
+  E --- Y
+  style E fill:#ffffff,stroke:#ffffff
+```
+
+### Key facts to remember
+
+- The thing you test is the **interaction (X × Z)**, not whether X or Z has its own effect. A moderator effect exists when the interaction is significant, whether or not the main effects are.
+- It's cleaner if the moderator is **uncorrelated with both X and Y**. That keeps the interaction easy to interpret.
+- Moderators are best tested when X can be **manipulated** (like in an experiment), so you can see how a controlled effect shifts across groups.
+- Baron and Kenny warn against comparing **correlations** between groups. Groups can have different variances, which messes with correlations. Compare **unstandardized regression slopes** instead.
+- **Measurement error** in the moderator or X lowers power, so a real moderator effect can be missed.
+- If you're dealing with a continuous moderator, you're assuming a shape for how it changes the effect (linear is the default). The authors note it could also be quadratic or a "step" where it only kicks in past a certain point.
+
+### Four testing setups (depends on variable types)
+
+| Moderator | Predictor (X) | How to test it |
+|---|---|---|
+| Categorical | Categorical | 2 × 2 ANOVA, look at the interaction |
+| Categorical | Continuous | Compare regression slopes of Y on X across groups |
+| Continuous | Categorical | Regress Y on X, Z, and X × Z (or model the expected shape of the change) |
+| Continuous | Continuous | Regress Y on X, Z, and the product term X × Z |
+
+## Mediators
+
+### What a mediator is
+
+A mediator is the "middle step." X affects M, and M then affects Y. It explains the **mechanism** behind why X and Y are related.
+
+```{mermaid}
+flowchart LR
+  X[Predictor X] -->|path a| M[Mediator M]
+  M -->|path b| Y[Outcome Y]
+  X -->|"path c (total) / c' (direct)"| Y
+```
+
+### The famous steps
+
+Baron and Kenny lay out three regression equations to test mediation:
+
+1. **Regress M on X** → X should significantly predict the mediator (path **a**).
+2. **Regress Y on X** → X should significantly predict the outcome (total effect, path **c**).
+3. **Regress Y on both X and M** → M should still predict Y while controlling for X (path **b**), and the effect of X should **drop** (path **c'** < **c**).
+
+**Reading the results:**
+
+- **Full (perfect) mediation:** X no longer predicts Y once M is in the model (c' ≈ 0).
+- **Partial mediation:** c' gets smaller but is still significant. Baron and Kenny point out this is more realistic in social psych since most outcomes have more than one cause.
+
+**R template for the three regressions (for future reference):**
+
+```r
+# Step 1: X -> M (path a)
+model_a <- lm(M ~ X, data = df)
+
+# Step 2: X -> Y (total effect, path c)
+model_c <- lm(Y ~ X, data = df)
+
+# Step 3: X + M -> Y (path b and direct effect c')
+model_b <- lm(Y ~ X + M, data = df)
+
+# Test the indirect effect (a * b) with bootstrapping
+library(mediation)
+med <- mediate(model_a, model_b, treat = "X", mediator = "M",
+               boot = TRUE, sims = 1000)
+summary(med)
+```
+
+### Key facts to remember
+
+- The authors recommend testing the **indirect effect (a × b)** directly with the **Sobel test** instead of just eyeballing whether c' shrank.
+- **Measurement error in the mediator is a big deal.** It makes the mediator look weaker than it really is (underestimates b) and makes X's direct effect look bigger (overestimates c'). Their fix is using **multiple indicators and structural equation modeling (SEM)** with latent variables.
+- **Watch for reverse causality.** If Y could actually be causing M, the mediation story falls apart. The model assumes M comes before Y.
+- Since mediators are usually **measured, not manipulated**, construct validity matters a lot. You need to be confident the measure actually captures the process you claim it does.
+
+## Combining Both
+
+The paper also covers cases where moderators and mediators show up together:
+
+- **Mediated moderation:** A moderator changes the X → Y effect, and a mediator explains *why* that interaction happens. Basically, the interaction (X × Z) works through M.
+- The bigger point is that the two concepts can be **complementary**. Treating a variable as a moderator instead of a mediator (or vice versa) can sometimes settle debates where two theories look like they contradict each other.
+
+## Why This Matters for Marketing (My Takeaways)
+
+This lines up really well with the kind of analysis I'm doing in my program and at work. A couple examples to keep in mind:
+
+- **Mediation example:** Does an Instagram ad campaign (X) increase sign-ups (Y) *because* it improves awareness of the program (M)? If awareness explains most of the effect, I know the content needs to focus on awareness first.
+- **Moderation example:** Does that same campaign work better for first-year students than for upperclassmen? Here class standing (Z) is a moderator. The campaign works, but *how well* depends on the audience.
+- From my IBM 6540 group project, we found **channel × category interaction effects** even though there was no overall channel difference. That's basically a moderator situation: the "channel" effect only showed up depending on product category. This paper gives me the language for explaining that.
+
+**Bottom line for me:** before running any model, decide whether I'm asking "for whom/when" (moderator → interaction term) or "how/why" (mediator → indirect effect). They need different models, and mixing them up leads to wrong conclusions.
+
+## Limitations Worth Knowing
+
+The paper is still the go-to citation, but a few things have changed since 1986:
+
+- Requiring a significant X → Y total effect (step 2) is now seen as too strict. Mediation can still happen even without a significant total effect.
+- **Bootstrapping** the indirect effect is now preferred over the Sobel test, since the Sobel test assumes a normal sampling distribution and has less power.
+- Regression-based mediation with cross-sectional data doesn't prove causation on its own. Design still matters.
+
+## Appendix
+
+- **GitHub Repo:** <https://github.com/rsabilla/baron-kenny-summary>
+- **GitHub Pages:** <https://rsabilla.github.io/baron-kenny-summary/>
