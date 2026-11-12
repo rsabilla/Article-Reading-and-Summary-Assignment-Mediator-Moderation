@@ -148,5 +148,5 @@ The paper is still the go-to citation, but a few things have changed since 1986:
 
 ## Appendix
 
-- **GitHub Repo:** <https://github.com/rsabilla/baron-kenny-summary>
-- **GitHub Pages:** <https://rsabilla.github.io/baron-kenny-summary/>
+- **GitHub Repo:** <https://github.com/rsabilla/Article-Reading-and-Summary-Assignment-Mediator-Moderation>
+- **GitHub Pages:** <https://rsabilla.github.io/Article-Reading-and-Summary-Assignment-Mediator-Moderation/>
